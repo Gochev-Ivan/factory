@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib as plt
 from mpl_toolkits.mplot3d import Axes3D
 from constants import *
-from functions import *
+from pathfinder import *
 import logging
 
 
@@ -30,15 +30,30 @@ if clientID != -1:
     # functional/handle code:
     emptyBuff = bytearray()
 
+    # handles:
+    for i in range(number_of_agvs):
+        [returnCode, agv_handles[i]] = vrep.simxGetObjectHandle(clientID, 'agv_' + str(i+1), vrep.simx_opmode_blocking)
+
+    for i in range(number_of_agvs):
+            [returnCode, motor_handles[i][0]] = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_leftMotor',
+                                                                         vrep.simx_opmode_blocking)
+            [returnCode, motor_handles[i][1]] = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_rightMotor',
+                                                                         vrep.simx_opmode_blocking)
+
     # main loop:
     while True:
         # main code goes here:
-        # handles:
-        [returnCode, agv_1] = vrep.simxGetObjectHandle(clientID, 'agv_1', vrep.simx_opmode_blocking)
 
         # read data:
-        [returnCode, pos] = vrep.simxGetObjectPosition(clientID, agv_1, -1, vrep.simx_opmode_blocking)
-        print('data = ', pos)
+        for i in range(number_of_agvs):
+            [returnCode, position] = vrep.simxGetObjectPosition(clientID, agv_handles[i], -1,
+                                                                vrep.simx_opmode_blocking)
+            [returnCode, orientation] = vrep.simxGetObjectOrientation(clientID, agv_handles[i], -1,
+                                                                      vrep.simx_opmode_blocking)
+            agv[i] = {'x': position[0], 'y': position[1], 'z': position[2],
+                      'a': orientation[0], 'b': orientation[1], 'g': orientation[2]}
+
+        print(agv[0])
 
         # sync VREP and Python:
         vrep.simxSynchronousTrigger(clientID)
