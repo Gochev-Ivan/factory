@@ -15,9 +15,14 @@ motor_handles = [[0 for x in range(number_of_agv_motors)] for x in range(number_
 
 # parameters:
 agv = [x for x in range(number_of_agvs)]
+agv_transformation_matrices = [x for x in range(number_of_agvs)]
 get_agv_velocities = [x for x in range(number_of_agvs)]
 set_agv_velocities = [[0 for x in range(number_of_agv_motors)] for x in range(number_of_agvs)]
 
 # PD controller parameter:
 Kp = 0.2
 Kd = 4
+
+
+for i in range(len(pathfinder_coord)):
+    print(pathfinder_coord[i])
