@@ -3,6 +3,8 @@ import matplotlib as plt
 from mpl_toolkits.mplot3d import Axes3D
 from constants import *
 from pathfinder import *
+from control import *
+import time
 import logging
 
 
@@ -41,9 +43,8 @@ if clientID != -1:
                                                                          vrep.simx_opmode_blocking)
 
     # main loop:
-    while True:
-        # main code goes here:
-
+    j = 0
+    for j in range(len(pathfinder_coord)):
         # read data:
         for i in range(number_of_agvs):
             [returnCode, position] = vrep.simxGetObjectPosition(clientID, agv_handles[i], -1,
@@ -52,9 +53,34 @@ if clientID != -1:
                                                                       vrep.simx_opmode_blocking)
             agv[i] = {'x': position[0], 'y': position[1], 'z': position[2],
                       'a': orientation[0], 'b': orientation[1], 'g': orientation[2]}
+            [returnCode, linear_velocity, angular_velocity] = vrep.simxGetObjectVelocity(clientID, agv_handles[i],
+                                                                                         vrep.simx_opmode_blocking)
+            get_agv_velocities[i] = {'v_x': linear_velocity[0], 'v_y': linear_velocity[1], 'v_z': linear_velocity[2],
+                                     'w_x': angular_velocity[0], 'w_y': angular_velocity[1], 'w_z': angular_velocity[2]}
 
-        print(agv[0])
+        # print(agv[0])
+        # print(get_agv_velocities[0])
 
+        # control:
+        for i in range(number_of_agvs):
+            motor_velocities = control(agv[i], get_agv_velocities[i], pathfinder_coord[j])
+            set_agv_velocities[i][0], set_agv_velocities[i][1] = motor_velocities[0], motor_velocities[1]
+            print("coord: ", pathfinder_coord[j])
+
+        print("motor velocities: ", set_agv_velocities)
+
+        # set agvs velocities:
+        for i in range(number_of_agvs):
+            errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][0], set_agv_velocities[i][0],
+                                                        vrep.simx_opmode_blocking)
+            errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][1], set_agv_velocities[i][1],
+                                                        vrep.simx_opmode_blocking)
+            # errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][1], initial_motor_speed,
+            #                                             vrep.simx_opmode_streaming)
+            # errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][1], initial_motor_speed,
+            #                                             vrep.simx_opmode_streaming)
+
+        time.sleep(1)
         # sync VREP and Python:
         vrep.simxSynchronousTrigger(clientID)
 
