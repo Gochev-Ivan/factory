@@ -5,6 +5,9 @@ number_of_agv_motors = 2  # 0 = leftMotor, 1 = rightMotor
 initial_motor_speed = 2
 distance_to_goal = 0
 wheel_radius = 0.0275
+factory_width = 60  # x0.5m in 1 square
+factory_length = 120  # x0.5m in 1 square
+cell_length = 0.5
 
 pathfinder_coord = [[-4.225, -8.225, 0.1388], [-2.225, -5.225, 1388]]
 # pathfinder_coord = [-2.7, -9.9, 0.1388]
@@ -22,7 +25,3 @@ set_agv_velocities = [[0 for x in range(number_of_agv_motors)] for x in range(nu
 # PD controller parameter:
 Kp = 0.2
 Kd = 4
-
-
-for i in range(len(pathfinder_coord)):
-    print(pathfinder_coord[i])
