@@ -1,5 +1,6 @@
 from constants import *
 import numpy as np
+import math
 
 
 def factory_settings():
@@ -22,9 +23,18 @@ def pathfinder(agv_starting_coord, agv_end_coord):
 
 
 environment = factory_settings()
-coordinates = [29, 14.5]
-vector = [coordinates[0] / 29.5, coordinates[1] / 14.5]
-print(vector)
+x_coord = 0
+y_coord = 0
+coord_step = 0.5
+for i in range(factory_length):
+    y_coord = 0
+    for j in range(factory_width):
+        environment[i][j] = (int(x_coord / 0.5), int(y_coord / 0.5))
+        y_coord -= coord_step
+    x_coord += coord_step
 
-
+for i in range(factory_length):
+    for j in range(factory_width):
+        print(environment[i][j])
+    print("\n")
 
