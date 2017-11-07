@@ -41,10 +41,14 @@ if clientID != -1:
                                                                          vrep.simx_opmode_blocking)
             [returnCode, motor_handles[i][1]] = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_rightMotor',
                                                                          vrep.simx_opmode_blocking)
+    for i in range(number_of_environment_objects):
+        [returnCode, environment_object_handle] = vrep.simxGetObjectHandle(clientID, environment_objects[i],
+                                                                           vrep.simx_opmode_blocking)
+        environment_objects_handles.append(environment_object_handle)
 
     # main loop:
-    # while True:
-    for k in range(len(pathfinder_coord)):
+    while True:
+        # for k in range(len(pathfinder_coord)):
         # read data:
         for i in range(number_of_agvs):
             [returnCode, position] = vrep.simxGetObjectPosition(clientID, agv_handles[i], -1,
@@ -65,15 +69,28 @@ if clientID != -1:
             if errorCode == vrep.simx_return_ok:
                 agv_transformation_matrices[i] = vrep.simxUnpackFloats(M)
 
+        for i in range(number_of_environment_objects):
+            [returnCode, position] = vrep.simxGetObjectPosition(clientID, environment_objects_handles[i], -1,
+                                                                vrep.simx_opmode_blocking)
+            [returnCode, orientation] = vrep.simxGetObjectOrientation(clientID, environment_objects_handles[i], -1,
+                                                                      vrep.simx_opmode_blocking)
+            get_environment_objects_data[i] = {'x': position[0], 'y': position[1], 'z': position[2],
+                                               'a': orientation[0], 'b': orientation[1], 'g': orientation[2]}
+
+        # get environment settings:
+        for i in range(number_of_environment_objects):
+            cell = coord2cell(get_environment_objects_data[i]['x'], get_environment_objects_data[i]['y'])
+            factory_environment[cell[0]][cell[1]] = 'w'
+
+        print(get_environment_objects_data[1])
         # print(agv_transformation_matrices)
         # print(agv[0])
         # print(get_agv_velocities[0])
 
         # control:
-        for i in range(number_of_agvs):
-            motor_velocities = control(agv[i], get_agv_velocities[i], pathfinder_coord[k])
-            set_agv_velocities[i][0], set_agv_velocities[i][1] = motor_velocities[0], motor_velocities[1]
-            print("coord: ", pathfinder_coord[k])
+        # for i in range(number_of_agvs):
+        #     motor_velocities = control(agv[i], get_agv_velocities[i], pathfinder_coord[i])
+        #     set_agv_velocities[i][0], set_agv_velocities[i][1] = motor_velocities[0], motor_velocities[1]
 
         print("motor velocities: ", set_agv_velocities)
 
@@ -93,6 +110,3 @@ if clientID != -1:
 
     # Now close the connection to V-REP:
     vrep.simxFinish(clientID)
-
-else:
-    print('Failed connecting to remote API server')

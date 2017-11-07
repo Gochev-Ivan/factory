@@ -17,10 +17,16 @@ agv_handles = [0 for x in range(number_of_agvs)]
 motor_handles = [[0 for x in range(number_of_agv_motors)] for x in range(number_of_agvs)]
 
 # parameters:
-agv = [x for x in range(number_of_agvs)]
-agv_transformation_matrices = [x for x in range(number_of_agvs)]
-get_agv_velocities = [x for x in range(number_of_agvs)]
+factory_floor = [[0 for x in range(factory_width)] for x in range(factory_length)]
+agv = [0 for x in range(number_of_agvs)]
+agv_transformation_matrices = [0 for x in range(number_of_agvs)]
+get_agv_velocities = [0 for x in range(number_of_agvs)]
 set_agv_velocities = [[0 for x in range(number_of_agv_motors)] for x in range(number_of_agvs)]
+environment_objects = ['box', 'control_centre', 'Cuboid', 'wall_1', 'wall_2', 'wall_3', 'wall_4', 'wall_5', 'wall_6',
+                       'customizableConveyor', 'agv_1']
+number_of_environment_objects = len(environment_objects)
+environment_objects_handles = []
+get_environment_objects_data = [0 for x in range(number_of_environment_objects)]
 
 # PD controller parameter:
 Kp = 0.2
