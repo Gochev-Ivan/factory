@@ -47,8 +47,8 @@ if clientID != -1:
         environment_objects_handles.append(environment_object_handle)
 
     # main loop:
-    while True:
-        # for k in range(len(pathfinder_coord)):
+    # while True:
+    for k in range(simulation_iterations):
         # read data:
         for i in range(number_of_agvs):
             [returnCode, position] = vrep.simxGetObjectPosition(clientID, agv_handles[i], -1,
@@ -78,11 +78,20 @@ if clientID != -1:
                                                'a': orientation[0], 'b': orientation[1], 'g': orientation[2]}
 
         # get environment settings:
+        factory_floor = reset_factory_settings()
         for i in range(number_of_environment_objects):
             cell = coord2cell(get_environment_objects_data[i]['x'], get_environment_objects_data[i]['y'])
-            factory_environment[cell[0]][cell[1]] = 'w'
+            factory_floor[cell[0]][cell[1]] = 'w'
 
-        print(get_environment_objects_data[1])
+        print("==========")
+        # print(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y'])
+        # print(coord2cell(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y']))
+        print_mtx(factory_floor)
+        # print(factory_floor[46][42])
+        print(coord2cell(-0.0000046, 14.95))
+        print(coord2cell(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y']))
+        print("==========")
+        # print(get_environment_objects_data[1])
         # print(agv_transformation_matrices)
         # print(agv[0])
         # print(get_agv_velocities[0])
