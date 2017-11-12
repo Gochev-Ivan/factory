@@ -55,7 +55,6 @@ def grid2graph(grid):
     height = factory_length
     width = factory_width
     graph = {(i, j): [] for j in range(width) for i in range(height) if not grid[i][j]}
-    # graph = {(i, j): [] for j in range(width) for i in range(height)}
     for row, col in graph.keys():
         if row < height - 1 and not grid[row + 1][col]:
             graph[(row, col)].append(("S", (row + 1, col)))
@@ -66,6 +65,20 @@ def grid2graph(grid):
     return graph
 
 
+def directions2coord(path_directions, factory_grid, agv_starting_coord, agv_end_coord):
+    start, goal = (agv_starting_coord[0], agv_starting_coord[1]), (agv_end_coord[0], agv_end_coord[1])
+    factory_grid[start[0]][start[1]] = 0
+    graph = grid2graph(factory_grid)
+    path_coord = [start]
+    cell = start
+    for d in path_directions:
+        for x in graph[cell]:
+            if x[0] == d:
+                cell = x[1]
+                path_coord.append(cell)
+    return path_coord
+
+
 def pathfinder_2(factory_grid, agv_starting_coord, agv_end_coord):
     start, goal = (agv_starting_coord[0], agv_starting_coord[1]), (agv_end_coord[0], agv_end_coord[1])
     pr_queue = []
@@ -73,7 +86,6 @@ def pathfinder_2(factory_grid, agv_starting_coord, agv_end_coord):
     visited = set()
     factory_grid[start[0]][start[1]] = 0
     graph = grid2graph(factory_grid)
-    print(graph[goal])
     while pr_queue:
         _, cost, path, current = heappop(pr_queue)
         if current == goal:
@@ -87,9 +99,10 @@ def pathfinder_2(factory_grid, agv_starting_coord, agv_end_coord):
     return "No path has been found for the agv."
 
 
-# print(len(factory_floor[0]))
-# print(coord2cell(27.5, -12.5))
 def activate_iteration(factory_f, start, end):
     environment_graph = grid2graph(factory_f)
+    # print(environment_graph)
+    # print_mtx(factory_f)
     p = pathfinder_2(factory_f, start, end)
-    print(p)
+    p_c = directions2coord(p, factory_f, start, end)
+    print(p_c)

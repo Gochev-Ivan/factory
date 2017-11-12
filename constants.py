@@ -24,7 +24,7 @@ agv_transformation_matrices = [0 for x in range(number_of_agvs)]
 get_agv_velocities = [0 for x in range(number_of_agvs)]
 set_agv_velocities = [[0 for x in range(number_of_agv_motors)] for x in range(number_of_agvs)]
 environment_objects = ['Pioneer_p3dx_visible', 'box', 'control_centre', 'Cuboid', 'wall_1', 'wall_2', 'wall_3', 'wall_4', 'wall_5', 'wall_6',
-                       'customizableConveyor', 'agv_1']
+                       'customizableConveyor', 'agv_1', 'Cuboid0', 'Cuboid1', 'Cuboid2', 'Cuboid3']
 number_of_environment_objects = len(environment_objects)
 environment_objects_handles = []
 get_environment_objects_data = [0 for x in range(number_of_environment_objects)]

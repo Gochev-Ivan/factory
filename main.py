@@ -104,7 +104,7 @@ if clientID != -1:
         #     motor_velocities = control(agv[i], get_agv_velocities[i], pathfinder_coord[i])
         #     set_agv_velocities[i][0], set_agv_velocities[i][1] = motor_velocities[0], motor_velocities[1]
 
-        print("motor velocities: ", set_agv_velocities)
+        # print("motor velocities: ", set_agv_velocities)
 
         # set agvs velocities:
         for i in range(number_of_agvs):
