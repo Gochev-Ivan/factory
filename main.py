@@ -92,7 +92,14 @@ if clientID != -1:
         # print(coord2cell(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y']))
         start = coord2cell(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y'])
         end = (1, 5)
-        activate_iteration(factory_floor, start, end)
+        path, direction = activate_iteration(factory_floor, start, end)
+        # transform path from cell to coordinates:
+        # cell2coord(path, direction)
+        for i in range(len(direction)):
+                path[i] = cell2coord(path[i][0], path[i][1], direction[i])
+        path[i + 1] = cell2coord(path[i + 1][0], path[i + 1][1], direction[i])
+        print(path)
+        write2csv(path, 1)
         print("==========")
         # print(get_environment_objects_data[1])
         # print(agv_transformation_matrices)

@@ -1,7 +1,14 @@
 from constants import *
 import numpy as np
 from heapq import heappop, heappush
-import queue
+import csv
+
+
+def write2csv(result, agv_id):
+    with open('path_for_agv_' + str(agv_id) + '.csv', 'w', newline='') as f1:
+        writer = csv.writer(f1)
+        for i in range(0, len(result)):
+            writer.writerow([result[i][0], result[i][1], 0.138657])
 
 
 def print_mtx(mtx):
@@ -18,6 +25,20 @@ def reset_factory_settings():
 def coord2cell(coord_x, coord_y):
     # function which translates coordinates from v-rep to cell position in the environment matrix representation
     return abs(int(coord_x / 0.5) + 59), abs(int((coord_y / 0.5) + 30))
+
+
+def cell2coord(cell_x, cell_y, direction):
+    # function which translates matrix cells to environment coordinates
+    # print(direction)
+    # if direction == 'E':
+    #     return (cell_x * 0.5) - (59 * 0.5), (cell_y * 0.5) - (30 * 0.5) + 0.5
+    # elif direction == 'W':
+    #     return (cell_x * 0.5) - (59 * 0.5), (cell_y * 0.5) - (30 * 0.5) - 0.5
+    # elif direction == 'N':
+    #     return (cell_x * 0.5) - (59 * 0.5) - 0.25, (cell_y * 0.5) - (30 * 0.5)
+    # elif direction == 'S':
+    #     return (cell_x * 0.5) - (59 * 0.5) + 0.25, (cell_y * 0.5) - (30 * 0.5)
+    return (cell_x * 0.5) - (59 * 0.5) - 0.225, (cell_y * 0.5) - (30 * 0.5)
 
 
 def heuristic(point_1, point_2):
@@ -76,7 +97,7 @@ def directions2coord(path_directions, factory_grid, agv_starting_coord, agv_end_
             if x[0] == d:
                 cell = x[1]
                 path_coord.append(cell)
-    return path_coord
+    return path_coord, path_directions
 
 
 def pathfinder_2(factory_grid, agv_starting_coord, agv_end_coord):
@@ -104,5 +125,6 @@ def activate_iteration(factory_f, start, end):
     # print(environment_graph)
     # print_mtx(factory_f)
     p = pathfinder_2(factory_f, start, end)
-    p_c = directions2coord(p, factory_f, start, end)
-    print(p_c)
+    p_c, direction = directions2coord(p, factory_f, start, end)
+    print(p_c, direction)
+    return p_c, direction
