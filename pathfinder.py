@@ -11,6 +11,15 @@ def write2csv(result, agv_id):
             writer.writerow([result[i][0], result[i][1], 0.138657])
 
 
+def write2txt(coordinates):
+    file = open('path.txt', 'w')
+    for coordinate in coordinates:
+        file.write(str(coordinate[0]) + ',' + str(coordinate[1]) + ',' + str(0.138657)
+                   + ', 0.000000, 90.000003, 90.000003, 1.000000, 15, 0.500000, 0.500000, 0.000000, 0, 0.000000, '
+                     '0.000000, 0.000000, 0.000000\n')
+    file.close()
+
+
 def print_mtx(mtx):
     for row in mtx:
         for val in row:

@@ -2,16 +2,14 @@
 dt = 0.05
 number_of_agvs = 1
 number_of_agv_motors = 2  # 0 = leftMotor, 1 = rightMotor
-initial_motor_speed = 2
+initial_motor_speed = 0.5
 distance_to_goal = 0
 wheel_radius = 0.0275
+wheels_separation = 0.4
 factory_width = 60  # x0.5m in 1 square
 factory_length = 120  # x0.5m in 1 square
 cell_length = 0.5
 simulation_iterations = 1
-
-pathfinder_coord = [[-4.225, -8.225, 0.1388], [-2.225, -5.225, 1388]]
-# pathfinder_coord = [-2.7, -9.9, 0.1388]
 
 # handles lists:
 agv_handles = [0 for x in range(number_of_agvs)]
@@ -30,5 +28,6 @@ environment_objects_handles = []
 get_environment_objects_data = [0 for x in range(number_of_environment_objects)]
 
 # PD controller parameter:
-Kp = 0.2
-Kd = 4
+l_phi = 0
+Kp = 0.5
+Kd = 2

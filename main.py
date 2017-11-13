@@ -37,9 +37,9 @@ if clientID != -1:
         [returnCode, agv_handles[i]] = vrep.simxGetObjectHandle(clientID, 'agv_' + str(i+1), vrep.simx_opmode_blocking)
 
     for i in range(number_of_agvs):
-            [returnCode, motor_handles[i][0]] = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_leftMotor',
+            [returnCode, motor_handles[i][0]] = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_leftMotor#0',
                                                                          vrep.simx_opmode_blocking)
-            [returnCode, motor_handles[i][1]] = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_rightMotor',
+            [returnCode, motor_handles[i][1]] = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_rightMotor#0',
                                                                          vrep.simx_opmode_blocking)
     for i in range(number_of_environment_objects):
         [returnCode, environment_object_handle] = vrep.simxGetObjectHandle(clientID, environment_objects[i],
@@ -47,8 +47,10 @@ if clientID != -1:
         environment_objects_handles.append(environment_object_handle)
 
     # main loop:
-    # while True:
-    for k in range(simulation_iterations):
+    generate_path = True
+    k = 0
+    while True:
+        # for k in range(10):
         # read data:
         for i in range(number_of_agvs):
             [returnCode, position] = vrep.simxGetObjectPosition(clientID, agv_handles[i], -1,
@@ -90,16 +92,19 @@ if clientID != -1:
         # print(factory_floor[46][42])
         # print(coord2cell(-0.0000046, 14.95))
         # print(coord2cell(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y']))
-        start = coord2cell(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y'])
+        start = coord2cell(agv[0]['x'], agv[0]['y'])
         end = (1, 5)
-        path, direction = activate_iteration(factory_floor, start, end)
         # transform path from cell to coordinates:
         # cell2coord(path, direction)
-        for i in range(len(direction)):
+        if generate_path:
+            path, direction = activate_iteration(factory_floor, start, end)
+            for i in range(len(direction)):
                 path[i] = cell2coord(path[i][0], path[i][1], direction[i])
-        path[i + 1] = cell2coord(path[i + 1][0], path[i + 1][1], direction[i])
-        print(path)
-        write2csv(path, 1)
+            path[i + 1] = cell2coord(path[i + 1][0], path[i + 1][1], direction[i])
+            write2txt(path)
+            generate_path = False
+            vrep.simxSetStringSignal(clientID, 'new_trajectory', 'true', vrep.simx_opmode_oneshot_wait)
+        # control(path)
         print("==========")
         # print(get_environment_objects_data[1])
         # print(agv_transformation_matrices)
@@ -107,20 +112,26 @@ if clientID != -1:
         # print(get_agv_velocities[0])
 
         # control:
-        # for i in range(number_of_agvs):
-        #     motor_velocities = control(agv[i], get_agv_velocities[i], pathfinder_coord[i])
-        #     set_agv_velocities[i][0], set_agv_velocities[i][1] = motor_velocities[0], motor_velocities[1]
-
-        # print("motor velocities: ", set_agv_velocities)
+        # for k in range(number_of_agvs):
+        print(str(k) + " current bezier point: ", path[k])
+        motor_velocities, d, last_phi = control((agv[0]['x'], agv[0]['y']), path[k], agv_transformation_matrices[0],
+                                                l_phi)
+        l_phi = last_phi
+        set_agv_velocities[0][0], set_agv_velocities[0][1] = motor_velocities[0], motor_velocities[1]
+        print("motor velocities: ", set_agv_velocities)
+        print("distance_to_next_point", d)
+        if d < 0.3:
+            k += 1
 
         # set agvs velocities:
         for i in range(number_of_agvs):
+
             errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][0], set_agv_velocities[i][0],
                                                         vrep.simx_opmode_blocking)
             errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][1], set_agv_velocities[i][1],
                                                         vrep.simx_opmode_blocking)
 
-        time.sleep(1)
+        time.sleep(0.025)
         # sync VREP and Python:
         vrep.simxSynchronousTrigger(clientID)
 

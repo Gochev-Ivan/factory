@@ -1,15 +1,38 @@
 import numpy as np
 from constants import *
+from pathfinder import *
+import constants
 
+def control(agv_position, path_position, inverted_transformation_matrix, last_phi):
+    path_position = list(path_position)
+    path_position.append(0.138657)
+    path_position.append(1)
+    new_transformation_matrix = [[0 for x in range(4)] for x in range(4)]
+    inverted_transformation_matrix = list(inverted_transformation_matrix)
+    inverted_transformation_matrix.append(0)
+    inverted_transformation_matrix.append(0)
+    inverted_transformation_matrix.append(0)
+    inverted_transformation_matrix.append(1)
+    for i in range(4):
+        for j in range(4):
+            new_transformation_matrix[i][j] = inverted_transformation_matrix[(4 * i) + j]
+    print_mtx(new_transformation_matrix)
 
-def control(agv_coord, agv_velocities, path_coord):
+    # multiply matrix and vector:
+    path_position = np.dot(new_transformation_matrix, path_position)
 
-    # distance_to_goal = np.sqrt(pathfinder_coord[0] ** 2 + pathfinder_coord[1] ** 2)
-    # theta = np.arctan2(pathfinder_coord[1], pathfinder_coord[0])
-    # initial_motor_speed
-    # rotational_velocity = Kp * theta
-    v_left_motor = initial_motor_speed + Kp * np.arctan2(path_coord[1], path_coord[0])
-    v_right_motor = initial_motor_speed - Kp * np.arctan2(path_coord[1], path_coord[0])
-    v_left_motor = v_left_motor / wheel_radius
-    v_right_motor = v_right_motor / wheel_radius
-    return [v_left_motor, v_right_motor]
+    # find distance and phi:
+    dist = np.sqrt(path_position[0] ** 2 + path_position[1] ** 2)
+    phi = np.arctan2(path_position[1], path_position[0])
+    delta_phi = phi - last_phi
+    last_phi = phi
+
+    v_desired = 0.5
+    om_desired = Kp * phi + Kd * delta_phi
+
+    # v_right_motor = v_desired + wheels_separation * om_desired
+    # v_left_motor = v_desired - wheels_separation * om_desired
+    v_right_motor = v_desired + om_desired
+    v_left_motor = v_desired - om_desired
+
+    return [v_left_motor, v_right_motor], dist, last_phi
