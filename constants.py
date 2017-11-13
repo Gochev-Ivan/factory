@@ -28,6 +28,5 @@ environment_objects_handles = []
 get_environment_objects_data = [0 for x in range(number_of_environment_objects)]
 
 # PD controller parameter:
-l_phi = 0
-Kp = 0.5
-Kd = 2
+Kp = 0.4
+Kd = 0.8

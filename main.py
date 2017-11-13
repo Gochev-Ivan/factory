@@ -114,13 +114,14 @@ if clientID != -1:
         # control:
         # for k in range(number_of_agvs):
         print(str(k) + " current bezier point: ", path[k])
-        motor_velocities, d, last_phi = control((agv[0]['x'], agv[0]['y']), path[k], agv_transformation_matrices[0],
-                                                l_phi)
-        l_phi = last_phi
+        motor_velocities, d = control((agv[0]['x'], agv[0]['y']), np.sqrt(get_agv_velocities[0]['v_x'] ** 2 +
+                                                                          get_agv_velocities[0]['v_y'] ** 2 +
+                                                                          get_agv_velocities[0]['v_z'] ** 2), path[k],
+                                                agv_transformation_matrices[0])
         set_agv_velocities[0][0], set_agv_velocities[0][1] = motor_velocities[0], motor_velocities[1]
         print("motor velocities: ", set_agv_velocities)
         print("distance_to_next_point", d)
-        if d < 0.3:
+        if d < 0.325:
             k += 1
 
         # set agvs velocities:
@@ -131,7 +132,7 @@ if clientID != -1:
             errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][1], set_agv_velocities[i][1],
                                                         vrep.simx_opmode_blocking)
 
-        time.sleep(0.025)
+        # time.sleep(0.025)
         # sync VREP and Python:
         vrep.simxSynchronousTrigger(clientID)
 
