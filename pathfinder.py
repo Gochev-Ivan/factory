@@ -47,7 +47,7 @@ def cell2coord(cell_x, cell_y, direction):
     #     return (cell_x * 0.5) - (59 * 0.5) - 0.25, (cell_y * 0.5) - (30 * 0.5)
     # elif direction == 'S':
     #     return (cell_x * 0.5) - (59 * 0.5) + 0.25, (cell_y * 0.5) - (30 * 0.5)
-    return (cell_x * 0.5) - (59 * 0.5) - 0.225, (cell_y * 0.5) - (30 * 0.5)
+    return (cell_x * 0.5) - (59 * 0.5) - 0.225, (cell_y * 0.5) - (30 * 0.5) + 0.225
 
 
 def heuristic(point_1, point_2):
@@ -112,7 +112,7 @@ def directions2coord(path_directions, factory_grid, agv_starting_coord, agv_end_
 def pathfinder_2(factory_grid, agv_starting_coord, agv_end_coord):
     start, goal = (agv_starting_coord[0], agv_starting_coord[1]), (agv_end_coord[0], agv_end_coord[1])
     pr_queue = []
-    heappush(pr_queue, (0 + heuristic(start, goal), 0, "", start))
+    heappush(pr_queue, (0.5 + heuristic(start, goal), 0, "", start))
     visited = set()
     factory_grid[start[0]][start[1]] = 0
     graph = grid2graph(factory_grid)
