@@ -44,6 +44,12 @@ braitenberg_right = [-1.6, -1.4, -1.2, -1, -0.8, -0.6, -0.4, -0.2, 0.0, 0.0, 0.0
 no_detection_dist = 0.5
 max_detection_dist = 0.2
 
+# pathfinder planner parameters:
+d = [0 for x in range(number_of_agvs)]  # distance to points for each agv
+k = [0 for x in range(number_of_agvs)]  # bezier point for each agv
+path = [0 for x in range(number_of_agvs)]  # path for each agv
+d_1 = 0
+d_2 = 0
 # PD controller parameter:
 # Kp = 0.4
 # Kd = 0.8

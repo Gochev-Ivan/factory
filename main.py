@@ -68,8 +68,6 @@ if clientID != -1:
     generate_path_agv_2 = True
     # generate_path_agv_1 = False
     # generate_path_agv_2 = False
-    k1 = 0
-    k2 = 0
     while True:
         # for k in range(10):
         # read data:
@@ -127,60 +125,48 @@ if clientID != -1:
         if generate_path_agv_1:
             start = coord2cell(agv[0]['x'], agv[0]['y'])
             end = (56, 30)
-            path1, direction = activate_iteration(factory_floor, start, end)
+            path[0], direction = activate_iteration(factory_floor, start, end)
             for i in range(len(direction)):
-                path1[i] = cell2coord(path1[i][0], path1[i][1], direction[i])
-            path1[i + 1] = cell2coord(path1[i + 1][0], path1[i + 1][1], direction[i])
-            write2txt(path1, 1)
+                path[0][i] = cell2coord(path[0][i][0], path[0][i][1], direction[i])
+            path[0][i + 1] = cell2coord(path[0][i + 1][0], path[0][i + 1][1], direction[i])
+            write2txt(path[0], 1)
             generate_path_agv_1 = False
             vrep.simxSetStringSignal(clientID, 'new_trajectory1', 'true', vrep.simx_opmode_oneshot_wait)
 
         if generate_path_agv_2:
-            # start = coord2cell(agv[1]['x'], agv[1]['y'])
             start = (55, 30)
             end = (59, 30)
-            path2, direction2 = activate_iteration(factory_floor, start, end)
+            path[1], direction2 = activate_iteration(factory_floor, start, end)
             for i in range(len(direction2)):
-                path2[i] = cell2coord(path2[i][0], path2[i][1], direction2[i])
-            path2[i + 1] = cell2coord(path2[i + 1][0], path2[i + 1][1], direction2[i])
-            write2txt(path2, 2)
+                path[1][i] = cell2coord(path[1][i][0], path[1][i][1], direction2[i])
+            path[1][i + 1] = cell2coord(path[1][i + 1][0], path[1][i + 1][1], direction2[i])
+            write2txt(path[1], 2)
             generate_path_agv_2 = False
             vrep.simxSetStringSignal(clientID, 'new_trajectory2', 'true', vrep.simx_opmode_oneshot_wait)
         print("==========")
-        print(coord2cell(agv[0]['x'], agv[0]['y']))
-        print(coord2cell(agv[1]['x'], agv[1]['y']))
-        # control:
-        print(path1)
-        print(path2)
-        for q in range(number_of_agvs):
-            if q == 0:
-                # print(str(k1) + " current bezier point: ", path1[k1])
-                motor_velocities, d1 = control((agv[q]['x'], agv[q]['y']), np.sqrt(get_agv_velocities[q]['v_x'] ** 2 +
-                                                                                  get_agv_velocities[q]['v_y'] ** 2 +
-                                                                                  get_agv_velocities[q]['v_z'] ** 2),
-                                              path1[k1],
-                                              agv_transformation_matrices[q])
-                set_agv_velocities[q][0], set_agv_velocities[q][1] = motor_velocities[0], motor_velocities[1]
-            if q == 1:
-                # print(str(k2) + " current bezier point: ", path2[k2])
-                motor_velocities, d2 = control((agv[q]['x'], agv[q]['y']), np.sqrt(get_agv_velocities[q]['v_x'] ** 2 +
-                                                                                  get_agv_velocities[q]['v_y'] ** 2 +
-                                                                                  get_agv_velocities[q]['v_z'] ** 2),
-                                              path2[k2],
-                                              agv_transformation_matrices[q])
-                set_agv_velocities[q][0], set_agv_velocities[q][1] = motor_velocities[0], motor_velocities[1]
 
-        # set_agv_velocities[0][0], set_agv_velocities[0][1] = initial_motor_speed, initial_motor_speed
-        # set_agv_velocities[1][0], set_agv_velocities[1][1] = initial_motor_speed, initial_motor_speed
+        # control:
+        print('path for agv_1: ', path[0])
+        print('path for agv_2: ', path[1])
+        for q in range(number_of_agvs):
+            motor_velocities, d[q] = control((agv[q]['x'], agv[q]['y']), np.sqrt(get_agv_velocities[q]['v_x'] ** 2 +
+                                                                                 get_agv_velocities[q]['v_y'] ** 2 +
+                                                                                 get_agv_velocities[q]['v_z'] ** 2),
+                                             path[q][k[q]],
+                                             agv_transformation_matrices[q])
+            set_agv_velocities[q][0], set_agv_velocities[q][1] = motor_velocities[0], motor_velocities[1]
+
         print("motor velocities: ", set_agv_velocities)
-        # print("d1: distance_to_next_point", d1)
-        # print("d2: distance_to_next_point", d2)
-        print('point 1: ', k1)
-        print('point 2: ', k2)
-        if d1 < 0.325:
-            k1 += 1
-        if d2 < 0.325:
-            k2 += 1
+        print('vehicle_1 point: ', k[0], '; vehicle_1 distance: ', d[0])
+        print('vehicle_2 point: ', k[1], '; vehicle_2 distance: ', d[1])
+
+        # eliminate reached points:
+        if d[0] <= 0.325:
+            k[0] += 1
+            print('path[0]: ', path[0])
+        if d[1] <= 0.325:
+            k[1] += 1
+            print('path[1]: ', path[1])
 
         # set agvs velocities:
         for i in range(number_of_agvs):
@@ -189,7 +175,7 @@ if clientID != -1:
             errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][1], set_agv_velocities[i][1],
                                                         vrep.simx_opmode_blocking)
 
-        # time.sleep(0.025)
+        time.sleep(0.025)
         # sync VREP and Python:
         vrep.simxSynchronousTrigger(clientID)
 
