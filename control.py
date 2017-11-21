@@ -16,7 +16,6 @@ def control(agv_position, agv_velocity, path_position, inverted_transformation_m
     for i in range(4):
         for j in range(4):
             new_transformation_matrix[i][j] = inverted_transformation_matrix[(4 * i) + j]
-    print_mtx(new_transformation_matrix)
 
     # multiply matrix and vector:
     path_position = np.dot(new_transformation_matrix, path_position)
@@ -26,7 +25,7 @@ def control(agv_position, agv_velocity, path_position, inverted_transformation_m
     phi = np.arctan2(path_position[1], path_position[0])
 
     v_desired = 0.4
-    # v_desired = 0.55
+    # v_desired = 2
     om_desired = Kp * phi + Kd * agv_velocity
 
     # v_right_motor = v_desired + wheels_separation * om_desired
