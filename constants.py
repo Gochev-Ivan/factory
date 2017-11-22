@@ -28,6 +28,20 @@ environment_objects = ['Pioneer_p3dx_visible', 'box', 'control_centre', 'Cuboid'
 number_of_environment_objects = len(environment_objects)
 environment_objects_handles = []
 get_environment_objects_data = [0 for x in range(number_of_environment_objects)]
+wall_12_start = 20
+wall_12_end = 60
+wall_3_start = 0
+wall_3_end = 120
+wall_4_start = 80
+wall_4_end = 110
+wall_5_start = 10
+wall_5_end = 40
+wall_6_start = 50
+wall_6_end = 70
+wall_1_x_point = 0
+wall_2_x_point = 119
+wall_3_y_point = 59
+wall_456_y_point = 20
 
 # collision avoidance parameters:
 number_of_proximity_sensors = 16
@@ -48,8 +62,7 @@ max_detection_dist = 0.2
 d = [0 for x in range(number_of_agvs)]  # distance to points for each agv
 k = [0 for x in range(number_of_agvs)]  # bezier point for each agv
 path = [0 for x in range(number_of_agvs)]  # path for each agv
-d_1 = 0
-d_2 = 0
+
 # PD controller parameter:
 # Kp = 0.4
 # Kd = 0.8

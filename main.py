@@ -109,19 +109,20 @@ if clientID != -1:
         for i in range(number_of_environment_objects):
             cell = coord2cell(get_environment_objects_data[i]['x'], get_environment_objects_data[i]['y'])
             factory_floor[cell[0]][cell[1]] = 'w'
+        for j in range(wall_12_start, wall_12_end):
+            factory_floor[wall_1_x_point][j] = 'w'
+            factory_floor[wall_2_x_point][j] = 'w'
+        for i in range(wall_3_start, wall_3_end):
+            factory_floor[i][wall_3_y_point] = 'w'
+        for i in range(wall_4_start, wall_4_end):
+            factory_floor[i][wall_456_y_point] = 'w'
+        for i in range(wall_5_start, wall_5_end):
+            factory_floor[i][wall_456_y_point] = 'w'
+        for i in range(wall_6_start, wall_6_end):
+            factory_floor[i][wall_456_y_point] = 'w'
 
         print("==========")
-        # print(agv_transformation_matrices)
-        # print(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y'])
-        # print(coord2cell(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y']))
-        # print_mtx(factory_floor)
-        # print(factory_floor[46][42])
-        # print(coord2cell(-0.0000046, 14.95))
-        # print(coord2cell(get_environment_objects_data[0]['x'], get_environment_objects_data[0]['y']))
-        # print('detection: ', agv_sensors_detection)
-        # print('read_data: ', agv_sensors_read_data)
-        # transform path from cell to coordinates:
-        # cell2coord(path, direction)
+        print_mtx(factory_floor)
         if generate_path_agv_1:
             start = coord2cell(agv[0]['x'], agv[0]['y'])
             end = (56, 30)
@@ -163,10 +164,8 @@ if clientID != -1:
         # eliminate reached points:
         if d[0] <= 0.325:
             k[0] += 1
-            print('path[0]: ', path[0])
         if d[1] <= 0.325:
             k[1] += 1
-            print('path[1]: ', path[1])
 
         # set agvs velocities:
         for i in range(number_of_agvs):
@@ -175,7 +174,7 @@ if clientID != -1:
             errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][1], set_agv_velocities[i][1],
                                                         vrep.simx_opmode_blocking)
 
-        time.sleep(0.025)
+        # time.sleep(0.025)
         # sync VREP and Python:
         vrep.simxSynchronousTrigger(clientID)
 
