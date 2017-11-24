@@ -7,12 +7,12 @@ import csv
 def write2csv(result, agv_id):
     with open('path_for_agv_' + str(agv_id) + '.csv', 'w', newline='') as f1:
         writer = csv.writer(f1)
-        for i in range(0, len(result)):
-            writer.writerow([result[i][0], result[i][1], 0.138657])
+        for x in range(0, len(result)):
+            writer.writerow([result[x][0], result[x][1], 0.138657])
 
 
-def write2txt(coordinates, id):
-    file = open('path' + str(id) + '.txt', 'w')
+def write2txt(coordinates, id_number):
+    file = open('path' + str(id_number) + '.txt', 'w')
     for coordinate in coordinates:
         file.write(str(coordinate[0]) + ',' + str(coordinate[1]) + ',' + str(0.138657)
                    + ', 0.000000, 90.000003, 90.000003, 1.000000, 15, 0.500000, 0.500000, 0.000000, 0, 0.000000, '
@@ -28,7 +28,15 @@ def print_mtx(mtx):
 
 
 def reset_factory_settings():
-    return [[0 for x in range(factory_width)] for x in range(factory_length)]
+    return [[0 for _ in range(factory_width)] for _ in range(factory_length)]
+
+
+def reset_dynamical_factory_settings(local_factory_floor):
+    for x in range(factory_length):
+        for y in range(factory_width):
+            if local_factory_floor[x][y] == 'a':
+                local_factory_floor[x][y] = 0
+    return local_factory_floor
 
 
 def coord2cell(coord_x, coord_y):
@@ -36,18 +44,8 @@ def coord2cell(coord_x, coord_y):
     return abs(int(coord_x / 0.5) + 59), abs(int((coord_y / 0.5) + 30))
 
 
-def cell2coord(cell_x, cell_y, direction):
-    # function which translates matrix cells to environment coordinates
-    # print(direction)
-    # if direction == 'E':
-    #     return (cell_x * 0.5) - (59 * 0.5), (cell_y * 0.5) - (30 * 0.5) + 0.5
-    # elif direction == 'W':
-    #     return (cell_x * 0.5) - (59 * 0.5), (cell_y * 0.5) - (30 * 0.5) - 0.5
-    # elif direction == 'N':
-    #     return (cell_x * 0.5) - (59 * 0.5) - 0.25, (cell_y * 0.5) - (30 * 0.5)
-    # elif direction == 'S':
-    #     return (cell_x * 0.5) - (59 * 0.5) + 0.25, (cell_y * 0.5) - (30 * 0.5)
-    return (cell_x * 0.5) - (59 * 0.5) - 0.225, (cell_y * 0.5) - (30 * 0.5) + 0.225
+def cell2coord(cell_x, cell_y):
+    return (cell_x * 0.5) - (59 * 0.5) - cell_bias, (cell_y * 0.5) - (30 * 0.5) + cell_bias
 
 
 def heuristic(point_1, point_2):
@@ -84,7 +82,7 @@ def distance(point_1, point_2):
 def grid2graph(grid):
     height = factory_length
     width = factory_width
-    graph = {(i, j): [] for j in range(width) for i in range(height) if not grid[i][j]}
+    graph = {(x, y): [] for y in range(width) for x in range(height) if not grid[x][y]}
     for row, col in graph.keys():
         if row < height - 1 and not grid[row + 1][col]:
             graph[(row, col)].append(("S", (row + 1, col)))
@@ -101,9 +99,9 @@ def directions2coord(path_directions, factory_grid, agv_starting_coord, agv_end_
     graph = grid2graph(factory_grid)
     path_coord = [start]
     cell = start
-    for d in path_directions:
+    for d_p in path_directions:
         for x in graph[cell]:
-            if x[0] == d:
+            if x[0] == d_p:
                 cell = x[1]
                 path_coord.append(cell)
     return path_coord, path_directions
@@ -117,22 +115,19 @@ def pathfinder_2(factory_grid, agv_starting_coord, agv_end_coord):
     factory_grid[start[0]][start[1]] = 0
     graph = grid2graph(factory_grid)
     while pr_queue:
-        _, cost, path, current = heappop(pr_queue)
+        _, cost, found_path, current = heappop(pr_queue)
         if current == goal:
-            return path
+            return found_path
         if current in visited:
             continue
         visited.add(current)
         for direction, neighbour in graph[current]:
             heappush(pr_queue, (cost + heuristic(neighbour, goal), cost + 1,
-                                path + direction, neighbour))
+                                found_path + direction, neighbour))
     return "No path has been found for the agv."
 
 
 def activate_iteration(factory_f, start, end):
-    environment_graph = grid2graph(factory_f)
-    # print(environment_graph)
-    # print_mtx(factory_f)
     p = pathfinder_2(factory_f, start, end)
     p_c, direction = directions2coord(p, factory_f, start, end)
     print(p_c, direction)
