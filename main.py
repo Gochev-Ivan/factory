@@ -49,10 +49,10 @@ if clientID != -1:
             [returnCode, motor_handles[i][1]] = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_rightMotor22',
                                                                          vrep.simx_opmode_blocking)
 
-    for i in range(number_of_environment_objects):
-        [returnCode, environment_object_handle] = vrep.simxGetObjectHandle(clientID, environment_objects[i],
-                                                                           vrep.simx_opmode_blocking)
-        environment_objects_handles.append(environment_object_handle)
+    # for i in range(number_of_environment_objects):
+    #     [returnCode, environment_object_handle] = vrep.simxGetObjectHandle(clientID, environment_objects[i],
+    #                                                                        vrep.simx_opmode_blocking)
+    #     environment_objects_handles.append(environment_object_handle)
     print("Environment Objects Handles", environment_objects_handles)
 
     for key in agv_sensors_handles:
@@ -65,15 +65,42 @@ if clientID != -1:
                                                                                  vrep.simx_opmode_blocking)
 
     # read data for static objects:
-    for i in range(number_of_environment_objects):
-        [returnCode, position] = vrep.simxGetObjectPosition(clientID, environment_objects_handles[i], -1,
-                                                            vrep.simx_opmode_blocking)
-        [returnCode, orientation] = vrep.simxGetObjectOrientation(clientID, environment_objects_handles[i], -1,
-                                                                  vrep.simx_opmode_blocking)
-        get_environment_objects_data[i] = {'x': position[0], 'y': position[1], 'z': position[2],
-                                           'a': orientation[0], 'b': orientation[1], 'g': orientation[2]}
+    # for i in range(number_of_environment_objects):
+    #     [returnCode, position] = vrep.simxGetObjectPosition(clientID, environment_objects_handles[i], -1,
+    #                                                         vrep.simx_opmode_blocking)
+    #     [returnCode, orientation] = vrep.simxGetObjectOrientation(clientID, environment_objects_handles[i], -1,
+    #                                                               vrep.simx_opmode_blocking)
+    #     get_environment_objects_data[i] = {'x': position[0], 'y': position[1], 'z': position[2],
+    #                                        'a': orientation[0], 'b': orientation[1], 'g': orientation[2]}
     print("Get Environment Objects Data", get_environment_objects_data)
     print("Environment Objects: ", environment_objects)
+
+    # map environment:
+    factory_floor = reset_factory_settings()
+    j = 0
+    a = 0
+    for i in range(number_of_environment_objects):
+        cell = coord2cell(get_environment_objects_data[i]['x'], get_environment_objects_data[i]['y'])
+        if environment_objects[i] == 'rack' + str(j + 1):
+            factory_floor[cell[0]][cell[1]] = 'r'
+            factory_floor[cell[0]][cell[1] + 1] = 'r'
+            factory_floor[cell[0]][cell[1] - 1] = 'r'
+            j += 1
+        elif environment_objects[i] == 'agv_' + str(a + 1):
+            factory_floor[cell[0]][cell[1]] = 'a'
+        else:
+            factory_floor[cell[0]][cell[1]] = 'w'
+    for j in range(wall_12_start, wall_12_end):
+        factory_floor[wall_1_x_point][j] = 'w'
+        factory_floor[wall_2_x_point][j] = 'w'
+    for i in range(wall_3_start, wall_3_end):
+        factory_floor[i][wall_3_y_point] = 'w'
+    for i in range(wall_4_start, wall_4_end):
+        factory_floor[i][wall_456_y_point] = 'w'
+    for i in range(wall_5_start, wall_5_end):
+        factory_floor[i][wall_456_y_point] = 'w'
+    for i in range(wall_6_start, wall_6_end):
+        factory_floor[i][wall_456_y_point] = 'w'
 
     # main loop:
     generate_path_agv_1 = True
@@ -109,38 +136,13 @@ if clientID != -1:
                     vrep.simxReadProximitySensor(clientID, agv_sensors_handles[key][j], vrep.simx_opmode_blocking)
                 agv_sensors_detection[key][j] = agv_sensors_read_data[key][j][1]
 
-        factory_floor = reset_factory_settings()
-        j = 0
-        for i in range(number_of_environment_objects):
-            if environment_objects[i] == 'rack' + str(j + 1):
-                cell = coord2cell(get_environment_objects_data[i]['x'], get_environment_objects_data[i]['y'])
-                factory_floor[cell[0]][cell[1]] = 'r'
-                factory_floor[cell[0]][cell[1] + 1] = 'r'
-                factory_floor[cell[0]][cell[1] - 1] = 'r'
-                j += 1
-            else:
-                cell = coord2cell(get_environment_objects_data[i]['x'], get_environment_objects_data[i]['y'])
-                factory_floor[cell[0]][cell[1]] = 'w'
-        for j in range(wall_12_start, wall_12_end):
-            factory_floor[wall_1_x_point][j] = 'w'
-            factory_floor[wall_2_x_point][j] = 'w'
-        for i in range(wall_3_start, wall_3_end):
-            factory_floor[i][wall_3_y_point] = 'w'
-        for i in range(wall_4_start, wall_4_end):
-            factory_floor[i][wall_456_y_point] = 'w'
-        for i in range(wall_5_start, wall_5_end):
-            factory_floor[i][wall_456_y_point] = 'w'
-        for i in range(wall_6_start, wall_6_end):
-            factory_floor[i][wall_456_y_point] = 'w'
-
         # get environment settings:
         factory_floor = reset_dynamical_factory_settings(factory_floor)
-        for i in range(len(dynamical_objects_cells)):
-            factory_floor[dynamical_objects_cells[i][0]][dynamical_objects_cells[i][1]] = 'a'
+        factor_floor = set_new_dynamical_factory_settings(factory_floor, dynamical_objects_cells)
 
         # print("==========")
         # print("agv_1 sensors 1 - 16: ", agv_sensors_detection)
-        print_mtx(factory_floor)
+        # print_mtx(factory_floor)
         if generate_path_agv_1:
             start = coord2cell(agv[0]['x'], agv[0]['y'])
             end = (1, 5)
@@ -165,11 +167,6 @@ if clientID != -1:
         # print("==========")
 
         # control:
-        # print path in the matrix representation:
-        # for i in range(len(path)):
-        #     for j in range(len(path[i])):
-        #         factory_floor[path[j][0]][path[j][1]] = 'x' + str(i + 1)
-
         print('path for agv_1: ', path[0])
         print('path for agv_2: ', path[1])
         for q in range(number_of_agvs):

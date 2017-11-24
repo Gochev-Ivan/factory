@@ -31,6 +31,12 @@ def reset_factory_settings():
     return [[0 for _ in range(factory_width)] for _ in range(factory_length)]
 
 
+def set_new_dynamical_factory_settings(local_factory_floor, local_dynamical_objects_cells):
+    for x in range(len(dynamical_objects_cells)):
+        local_factory_floor[local_dynamical_objects_cells[x][0]][local_dynamical_objects_cells[x][1]] = 'a'
+    return local_factory_floor
+
+
 def reset_dynamical_factory_settings(local_factory_floor):
     for x in range(factory_length):
         for y in range(factory_width):
