@@ -7,6 +7,8 @@ from control import *
 from collision_avoidance import *
 import time
 import logging
+import pygame
+import path_tracking_neural_net as nn
 
 
 logging.basicConfig()
@@ -65,13 +67,14 @@ if clientID != -1:
                                                                                  vrep.simx_opmode_blocking)
 
     # read data for static objects:
-    # for i in range(number_of_environment_objects):
-    #     [returnCode, position] = vrep.simxGetObjectPosition(clientID, environment_objects_handles[i], -1,
-    #                                                         vrep.simx_opmode_blocking)
-    #     [returnCode, orientation] = vrep.simxGetObjectOrientation(clientID, environment_objects_handles[i], -1,
-    #                                                               vrep.simx_opmode_blocking)
-    #     get_environment_objects_data[i] = {'x': position[0], 'y': position[1], 'z': position[2],
-    #                                        'a': orientation[0], 'b': orientation[1], 'g': orientation[2]}
+    for i in range(number_of_environment_objects):
+        [returnCode, position] = vrep.simxGetObjectPosition(clientID, environment_objects_handles[i], -1,
+                                                            vrep.simx_opmode_blocking)
+        [returnCode, orientation] = vrep.simxGetObjectOrientation(clientID, environment_objects_handles[i], -1,
+                                                                  vrep.simx_opmode_blocking)
+        get_environment_objects_data[i] = {'x': position[0], 'y': position[1], 'z': position[2],
+                                           'a': orientation[0], 'b': orientation[1], 'g': orientation[2]}
+        print("Receiving data for object: ", i)
     print("Get Environment Objects Data", get_environment_objects_data)
     print("Environment Objects: ", environment_objects)
 
@@ -107,6 +110,7 @@ if clientID != -1:
     generate_path_agv_2 = True
     # generate_path_agv_1 = False
     # generate_path_agv_2 = False
+    # n_i = 0
     while True:
         # for k in range(10):
         # read data:
@@ -145,7 +149,8 @@ if clientID != -1:
         # print_mtx(factory_floor)
         if generate_path_agv_1:
             start = coord2cell(agv[0]['x'], agv[0]['y'])
-            end = (1, 5)
+            # end = (1, 5)
+            end = (59, 11)
             path[0], direction = activate_iteration(factory_floor, start, end)
             for i in range(len(direction)):
                 path[0][i] = cell2coord(path[0][i][0], path[0][i][1])
@@ -170,25 +175,39 @@ if clientID != -1:
         print('path for agv_1: ', path[0])
         print('path for agv_2: ', path[1])
         for q in range(number_of_agvs):
-            motor_velocities, d[q], last_phi[q] = control((agv[q]['x'], agv[q]['y']),
-                                                          np.sqrt(get_agv_velocities[q]['v_x'] ** 2 +
-                                                                  get_agv_velocities[q]['v_y'] ** 2 +
-                                                                  get_agv_velocities[q]['v_z'] ** 2),
-                                                          path[q][k[q]],
-                                                          agv_transformation_matrices[q], last_phi[q])
+            motor_velocities, d[q], last_phi[q], l_d = control((agv[q]['x'], agv[q]['y']),
+                                                               np.sqrt(get_agv_velocities[q]['v_x'] ** 2 +
+                                                               get_agv_velocities[q]['v_y'] ** 2 +
+                                                               get_agv_velocities[q]['v_z'] ** 2),
+                                                               path[q][k[q]],
+                                                               agv_transformation_matrices[q], last_phi[q])
             set_agv_velocities[q][0], set_agv_velocities[q][1] = motor_velocities[0], motor_velocities[1]
+            learning_data.append(l_d)
 
+        # ==========
+        # write learning data to database:
+        if k[0] == len(path[0]) - 1:
+            data_set_id = 6
+            write2csv(learning_data, data_set_id)
+            break
+        # ==========
+        # Drive:
+        # ==========
         print("motor velocities: ", set_agv_velocities)
         print('vehicle_1 point: ', k[0], '; vehicle_1 distance: ', d[0])
         print('vehicle_2 point: ', k[1], '; vehicle_2 distance: ', d[1])
 
         # eliminate reached points:
-        if d[0] <= 0.325:
+        if d[0] <= 0.4:
             k[0] += 1
-        if d[1] <= 0.325:
+        if d[1] <= 0.4:
             k[1] += 1
 
         # set agvs velocities:
+        # m_v = nn.one_layer()
+        # set_agv_velocities[0][0], set_agv_velocities[0][1] = m_v[n_i][1], m_v[n_i][0]
+        # print(m_v[n_i])
+        # n_i += 1
         for i in range(number_of_agvs):
             errorCode = vrep.simxSetJointTargetVelocity(clientID, motor_handles[i][0], set_agv_velocities[i][0],
                                                         vrep.simx_opmode_blocking)

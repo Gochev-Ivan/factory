@@ -5,10 +5,16 @@ import csv
 
 
 def write2csv(result, agv_id):
-    with open('path_for_agv_' + str(agv_id) + '.csv', 'w', newline='') as f1:
-        writer = csv.writer(f1)
-        for x in range(0, len(result)):
-            writer.writerow([result[x][0], result[x][1], 0.138657])
+        if len(result) > 3:
+            with open('data_set' + str(agv_id) + '.csv', 'w', newline='') as f1:
+                writer = csv.writer(f1)
+                for x in range(0, len(result)):
+                    writer.writerow([result[x][0], result[x][1], result[x][2], result[x][3], result[x][4], result[x][5]])
+        else:
+            with open('path_for_agv_' + str(agv_id) + '.csv', 'w', newline='') as f1:
+                writer = csv.writer(f1)
+                for x in range(0, len(result)):
+                    writer.writerow([result[x][0], result[x][1], 0.138657])
 
 
 def write2txt(coordinates, id_number):

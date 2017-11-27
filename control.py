@@ -6,6 +6,8 @@ import constants
 
 def control(agv_position, agv_velocity, path_position, inverted_transformation_matrix, local_last_phi):
     dist = np.sqrt((path_position[0] - agv_position[0]) ** 2 + (path_position[1] - agv_position[1]) ** 2)
+    path_angle = np.arctan2(path_position[1], path_position[0])
+
     path_position = list(path_position)
     path_position.append(0.138657)
     path_position.append(1)
@@ -33,20 +35,21 @@ def control(agv_position, agv_velocity, path_position, inverted_transformation_m
     # error_phi = phi_agv - phi_path
     # v_desired = 0.4
     # om_desired = Kp * phi + Kd * agv_velocity
-    v_desired = 1
-    delta_phi = phi - local_last_phi
+    v_desired = 0.5
+    delta_phi = phi + local_last_phi
     # om_desired = Kp * phi + Kd * delta_phi + Kv * agv_velocity
     om_desired = - Kp * phi - Kd * delta_phi
     return_last_phi = phi
     v_left_motor = v_desired + om_desired  # dali se znacite tie vo ovie 2 r-ki?
     v_right_motor = v_desired - om_desired
-    print("==========")
-    print("control")
-    print("local_last_phi: ", local_last_phi)
-    print("phi: ", phi)
-    print("delta phi: ", delta_phi)
-    print("om_desired: ", om_desired)
-    print("==========")
+    # print("==========")
+    # print("control")
+    # print("local_last_phi: ", local_last_phi)
+    # print("phi: ", phi)
+    # print("delta phi: ", delta_phi)
+    # print("om_desired: ", om_desired)
+    # print("==========")
+
     # II:
     # v_right_motor = v_desired + wheels_separation * om_desired
     # v_left_motor = v_desired - wheels_separation * om_desired
@@ -88,5 +91,35 @@ def control(agv_position, agv_velocity, path_position, inverted_transformation_m
     # print("phi: ", phi)
     # print("error path position: ", path_position)
     # print("inverted transformation matrix: ", inverted_transformation_matrix)
-    return [v_left_motor, v_right_motor], dist, return_last_phi
+    agv_angle = np.arctan2(agv_position[1], agv_position[0])
+    remember_me = [agv_angle, path_angle, phi, dist, v_left_motor, v_right_motor]
+    return [v_left_motor, v_right_motor], dist, return_last_phi, remember_me
     # return [v_right_motor, v_left_motor], dist, return_last_phi
+
+# ==========
+# Drive:
+# v_desired = 1
+# v_step = 0.1
+# steering_angle = 0.1
+# for event in pygame.event.get():
+#     if event.type == pygame.KEYDOWN:
+#         if event.key == pygame.K_LEFT:
+#             v_desired -= v_step
+#         if event.key == pygame.K_RIGHT:
+#             v_desired += v_step
+#         if event.key == pygame.K_UP:
+#             [returnCode, orient] = vrep.simxGetObjectOrientation(clientID, agv_handles[0], vrep.sim_handle_parent,
+#                                                                  vrep.simx_opmode_blocking)
+#             orient[2] += steering_angle
+#             vrep.simxSetObjectOrientation(clientID, agv_handles[0], vrep.sim_handle_parent, orient,
+#                                           vrep.simx_opmode_blocking)
+#         if event.key == pygame.K_DOWN:
+#             [returnCode, orient] = vrep.simxGetObjectOrientation(clientID, agv_handles[0], vrep.sim_handle_parent,
+#                                                                  vrep.simx_opmode_blocking)
+#             orient[2] -= steering_angle
+#             vrep.simxSetObjectOrientation(clientID, agv_handles[0], vrep.sim_handle_parent, orient,
+#                                           vrep.simx_opmode_blocking)
+# v_left_motor = v_desired
+# v_right_motor = v_desired
+# motor_velocities = [v_left_motor, v_right_motor]
+# set_agv_velocities[0][0], set_agv_velocities[0][1] = motor_velocities[0], motor_velocities[1]
