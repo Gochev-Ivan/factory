@@ -74,12 +74,12 @@ k = [0 for _ in range(number_of_agvs)]  # bezier point for each agv
 path = [0 for _ in range(number_of_agvs)]  # path for each agv
 
 # PD controller parameter:
-# Kp = 0.4
-# Kd = 0.8
+Kp = 0.5
+Kd = 0.01
 last_phi = [0 for _ in range(number_of_agvs)]
-Kp = - 0.4
-Kd = - 1.6
-Kv = 0
+# Kp = - 0.4
+# Kd = - 1.6
+# Kv = 0
 # Kv = 0.002
 
 # static environment handles and parameters:

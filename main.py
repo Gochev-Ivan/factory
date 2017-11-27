@@ -183,9 +183,9 @@ if clientID != -1:
         print('vehicle_2 point: ', k[1], '; vehicle_2 distance: ', d[1])
 
         # eliminate reached points:
-        if d[0] <= 0.225:
+        if d[0] <= 0.325:
             k[0] += 1
-        if d[1] <= 0.225:
+        if d[1] <= 0.325:
             k[1] += 1
 
         # set agvs velocities:
