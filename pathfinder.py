@@ -53,7 +53,7 @@ def reset_dynamical_factory_settings(local_factory_floor):
 
 def coord2cell(coord_x, coord_y):
     # function which translates coordinates from v-rep to cell position in the environment matrix representation
-    return abs(int(coord_x / 0.5) + 59), abs(int((coord_y / 0.5) + 30))
+    return abs(int(coord_x / 0.5) + 60), abs(int((coord_y / 0.5) + 30))
 
 
 def cell2coord(cell_x, cell_y):
